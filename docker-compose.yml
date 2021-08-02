@@ -74,6 +74,14 @@ services:
     extra_hosts:
       - "moby:127.0.0.1"
 
+# Added Redis
+  redis:
+    image: redis:latest
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+  
   mids:
     image: midsw205/base:0.1.9
     stdin_open: true

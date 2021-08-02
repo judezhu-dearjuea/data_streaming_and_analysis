@@ -2,23 +2,37 @@
 import json
 from kafka import KafkaProducer
 from flask import Flask, request
+import redis
 
 app = Flask(__name__)
 producer = KafkaProducer(bootstrap_servers='kafka:29092')
+redis_store = redis.Redis(
+    host='redis',
+    port='6379')
 
 
 def log_to_kafka(topic, event):
     event.update(request.headers)
     producer.send(topic, json.dumps(event).encode())
 
-#tracker = {'wallet':100,'enemies':1,'weapon':[]}
-@app.route("/initialize")
+# tracker = {'wallet':100,'enemies':1,'weapon':[]}
+@app.route("/initialize",methods = ['GET','POST'])
 def initialize():
-    initial_event = {'event_type':'initiaize player',
-                   'wallet':tracker['wallet'],
-                   'enemies':tracker['enemies'],
-                   'weapon':tracker['weapon']}
-    log_to_kafka('events',initial_event)
+    user_name = request.args.get('username',default='player',type=str)
+    
+    if redis.exists(user_name):
+        return "Username Taken! Please Input Another Username"
+    
+    else:
+        user = {"wallet":100,
+                "weapon":{"sword":0,
+                          "gun":0},
+                "health":10}
+        redis_store.hmset(user_name, user)
+        initial_event = {'event_type':'initiaize player',
+                         'username':user_name}
+        log_to_kafka('events',initial_event)
+    
     return "Game Started!\n"
 
     
