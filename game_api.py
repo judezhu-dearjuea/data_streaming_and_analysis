@@ -41,8 +41,8 @@ weapon_success_rate = {
     "Nuke": 1
 }
 
-sheild_price = 20
-sheild_protection = 5
+shield_price = 20
+shield_protection = 5
 
 shovel_price = 5
 gold_scaling = 5
@@ -69,12 +69,12 @@ def initialize():
         wallet = 100
         health = 20
         weapon = 'Stick'
-        sheild = 0
+        shield = 0
         redis_store.hset('user_alive',user_name, 1)
         redis_store.hset('wallet',user_name, wallet)
         redis_store.hset('health',user_name, health)
         redis_store.hset('weapon',user_name, weapon)
-        redis_store.hset('sheild',user_name, sheild)
+        redis_store.hset('shield',user_name, shield)
         initial_event = {'event_type':'initiaize player',
                          'username':user_name}
         log_to_kafka('events',initial_event)
@@ -114,29 +114,29 @@ def purchase_weapon():
         log_to_kafka('events', purchase_weapon_event)
         return "%s Purchased!\n" % weapon
 
-# Call to purchase a sheild
-@app.route("/purchase_sheild",methods = ['GET','POST'])
-def purchase_sheild():
+# Call to purchase a shield
+@app.route("/purchase_shield",methods = ['GET','POST'])
+def purchase_shield():
     user_name = request.args.get('username',type=str)
     if not redis_store.hexists('user_alive',user_name):
         return "Not Valid Username! Please Initialize.\n"
     elif redis_store.hget('user_alive',user_name) == 0:
         return "User is Dead! Please Start a New Game. \n"
-    elif int(redis_store.hget('wallet',user_name)) < sheild_price:
-        return "Not enough money in wallet! Get more to purchase a sheild.\n"
+    elif int(redis_store.hget('wallet',user_name)) < shield_price:
+        return "Not enough money in wallet! Get more to purchase a shield.\n"
     else:
         wallet_before = int(redis_store.hget('wallet', user_name))
-        wallet_after = wallet_before - sheild_price
+        wallet_after = wallet_before - shield_price
         redis_store.hset('wallet', user_name, wallet_after)
-        redis_store.hset('sheild', user_name, 1)
-        purchase_sheild_event = {
-            'event_type': 'purchase_sheild',
+        redis_store.hset('shield', user_name, 1)
+        purchase_shield_event = {
+            'event_type': 'purchase_shield',
             'username': user_name,
             'wallet_before': wallet_before,
             'wallet_after': wallet_after
         }
-        log_to_kafka('events', purchase_sheild_event)
-        return "Sheild Purchased!\n"
+        log_to_kafka('events', purchase_shield_event)
+        return "shield Purchased!\n"
 
 # Call to dig for gold
 @app.route("/dig_for_gold",methods = ['GET','POST'])
@@ -179,12 +179,12 @@ def attack():
         return "Enemy is Dead! Don't kick a man when they're down. \n"
     else:
         weapon = redis_store.hget('weapon',user_name)
-        enemy_sheild = bool(redis_store.hget('sheild',enemy))
+        enemy_shield = bool(redis_store.hget('shield',enemy))
         enemy_health_before = int(redis_store.hget('health',enemy))
         attack_successful = bool(random.binomial(1, weapon_success_rate[weapon]))
         if attack_successful:
-            if enemy_sheild:
-                damage = max(0, weapon_damage[weapon] - sheild_protection)
+            if enemy_shield:
+                damage = max(0, weapon_damage[weapon] - shield_protection)
                 enemy_health_after = max(0, enemy_health_before - damage)   
             else:
                 damage = weapon_damage[weapon]
@@ -215,5 +215,3 @@ def attack():
                 return "Attacked Enemy with %s! Enemy has %i Health Left.\n" % (weapon, enemy_health_after)
         else:
             return "Attacked with %s Failed!" % (weapon)
-
-
