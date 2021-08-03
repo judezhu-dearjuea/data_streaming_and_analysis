@@ -45,7 +45,9 @@ shield_price = 20
 shield_protection = 5
 
 shovel_price = 5
-gold_scaling = 5
+#25 gold scaling to make it interesting
+#original 5
+gold_scaling = 25
 
 def log_to_kafka(topic, event):
     event.update(request.headers)
