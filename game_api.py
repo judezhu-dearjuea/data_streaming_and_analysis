@@ -11,7 +11,8 @@ producer = KafkaProducer(bootstrap_servers='kafka:29092')
 
 redis_store = redis.Redis(
     host='redis',
-    port='6379')
+    port='6379'
+)
 
 weapon_prices = {
     "Stick": 0,
@@ -77,8 +78,10 @@ def initialize():
         redis_store.hset('health',user_name, health)
         redis_store.hset('weapon',user_name, weapon)
         redis_store.hset('shield',user_name, shield)
-        initial_event = {'event_type':'initiaize player',
-                         'username':user_name}
+        initial_event = {
+            'event_type':'initiaize player',
+            'username':user_name
+        }
         log_to_kafka('events',initial_event)
         
         return (
@@ -216,4 +219,11 @@ def attack():
             else:
                 return "Attacked Enemy with %s! Enemy has %i Health Left.\n" % (weapon, enemy_health_after)
         else:
+            failed_attack_event = {
+                'event_type': 'failed_attack',
+                'attacker': user_name,
+                'defender': enemy,
+                'weapon_used': weapon
+            }
+            log_to_kafka('events', failed_attack_event)
             return "Attacked with %s Failed!" % (weapon)
