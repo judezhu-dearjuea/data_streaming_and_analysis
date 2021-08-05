@@ -1,8 +1,8 @@
 #!/bin/bash
 #set limits
-MAXUSER=20
+MAXUSER=10
 #MINUSER=0
-MAXREQ=20
+MAXREQ=1000
 #initialize incrementer
 #NOOFUSER=0
 REQS=0
