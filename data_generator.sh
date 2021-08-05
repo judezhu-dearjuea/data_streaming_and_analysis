@@ -1,8 +1,8 @@
 #!/bin/bash
 #set limits
-MAXUSER=9
+MAXUSER=50
 #MINUSER=0
-MAXREQ=1000
+MAXREQ=100
 #initialize incrementer
 #NOOFUSER=0
 REQS=0
@@ -15,7 +15,7 @@ while [[ $REQS -le $MAXREQ ]]; do
     ID2=$(( ( RANDOM % MAXUSER) + 1 ))
     ENEMYID="user${ID2}"
     #STAGE randomizer
-    STAGE=$(((RANDOM % 9)))
+    STAGE=$(( RANDOM % 9 ))
     #if USERID and ENEMYID are the same, regenerate ENEMYID
     while [[ $USERID == $ENEMYID ]]; do
         TEMPID=$(( ( RANDOM % MAXUSER ) + 1 ))
@@ -35,7 +35,6 @@ while [[ $REQS -le $MAXREQ ]]; do
         0)  #add enemy
             #echo "Stagge ${Stage} REQS ${REQS} USER ${NOOFUSER} add an enemy"
             docker-compose exec mids ab -n 1 -H "Host: user1.comcast.com" http://localhost:5000/initialize?username=$ENEMYID
-            let NOOFUSER=NOOFUSER+1
             ;;
         1|2)  #purchase weapon
             WEAPONPURCHASE=${WEAPON[$(($RANDOM % ${#WEAPON[@]}))]}

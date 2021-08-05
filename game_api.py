@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 import json
 from kafka import KafkaProducer
 from flask import Flask, request
@@ -79,7 +79,7 @@ def initialize():
         redis_store.hset('weapon',user_name, weapon)
         redis_store.hset('shield',user_name, shield)
         initial_event = {
-            'event_type':'initiaize player',
+            'event_type':'initialize_player',
             'username':user_name
         }
         log_to_kafka('events',initial_event)
