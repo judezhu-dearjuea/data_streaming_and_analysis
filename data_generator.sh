@@ -1,6 +1,6 @@
 #!/bin/bash
 #set limits
-MAXUSER=10
+MAXUSER=9
 #MINUSER=0
 MAXREQ=1000
 #initialize incrementer
