@@ -15,7 +15,7 @@ while [[ $REQS -le $MAXREQ ]]; do
     ID2=$(( ( RANDOM % MAXUSER) + 1 ))
     ENEMYID="user${ID2}"
     #STAGE randomizer
-    STAGE=$(((RANDOM % 6)))
+    STAGE=$(((RANDOM % 9)))
     #if USERID and ENEMYID are the same, regenerate ENEMYID
     while [[ $USERID == $ENEMYID ]]; do
         TEMPID=$(( ( RANDOM % MAXUSER ) + 1 ))
@@ -37,27 +37,22 @@ while [[ $REQS -le $MAXREQ ]]; do
             docker-compose exec mids ab -n 1 -H "Host: user1.comcast.com" http://localhost:5000/initialize?username=$ENEMYID
             let NOOFUSER=NOOFUSER+1
             ;;
-        1)  #purchase weapon
+        1|2)  #purchase weapon
             WEAPONPURCHASE=${WEAPON[$(($RANDOM % ${#WEAPON[@]}))]}
             #echo "Stagge ${Stage} REQS ${REQS} USER ${NOOFUSER} trying to purchase weapon ${WEAPONPURCHASE}"
             docker-compose exec mids ab -n 1 -H "Host: user1.comcast.com" "http://localhost:5000/purchase_weapon?username=$USERID&weapon=$WEAPONPURCHASE"
             ;;
-        2)  #purchase shield
+        3)  #purchase shield
             #echo "Stagge ${Stage} REQS ${REQS} USER ${NOOFUSER} trying to purchase shield"
             docker-compose exec mids ab -n 1 -H "Host: user1.comcast.com" http://localhost:5000/purchase_shield?username=$USERID
             ;;
-        3)  #attack enemy
+        4|5|6|7)  #attack enemy
             #echo "Stagge ${Stage} REQS ${REQS} USER ${NOOFUSER} trying to attack with ${WEAPONATTACK}"
             docker-compose exec mids ab -n 1 -H "Host: user1.comcast.com" "http://localhost:5000/attack?username=$USERID&enemy=$ENEMYID"
             ;;
-        4)  #dig for gold
+        8)  #dig for gold
             #echo "Stagge ${Stage} REQS ${REQS} USER ${NOOFUSER} dig gold"
             docker-compose exec mids ab -n 5 -H "Host: user1.comcast.com" http://localhost:5000/dig_for_gold?username=$USERID
-            ;;
-        5)  #increase weapon purchase frequencies
-            WEAPONPURCHASE=${WEAPON[$(($RANDOM % ${#WEAPON[@]}))]}
-            #echo "Stagge ${Stage} REQS ${REQS} USER ${NOOFUSER} trying to purchase weapon ${WEAPONPURCHASE}"
-            docker-compose exec mids ab -n 1 -H "Host: user1.comcast.com" "http://localhost:5000/purchase_weapon?username=$USERID&weapon=$WEAPONPURCHASE"
             ;;
     esac
     let REQS=REQS+1
