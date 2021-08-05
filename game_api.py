@@ -34,10 +34,10 @@ weapon_damage = {
 }
 weapon_success_rate = {
     "Stick": 1,
-    "Knife": 0.2,
-    "Sword": 0.5,
-    "Grenade": 0.3,
-    "Gun": 0.7,
+    "Knife": 0.7,
+    "Sword": 0.65,
+    "Grenade": 0.4,
+    "Gun": 0.75,
     "Bazooka": 0.5,
     "Nuke": 1
 }
@@ -96,7 +96,7 @@ def purchase_weapon():
     
     if not redis_store.hexists('user_alive',user_name):
         return "Not Valid Username! Please Initialize.\n"
-    elif redis_store.hget('user_alive',user_name) == 0:
+    elif int(redis_store.hget('user_alive',user_name)) == 0:
         return "User is Dead! Please Start a New Game. \n"
     elif weapon not in weapon_prices.keys():
         return_string = ", ".join(str(x) for x in weapon_prices.keys())
@@ -125,7 +125,7 @@ def purchase_shield():
     user_name = request.args.get('username',type=str)
     if not redis_store.hexists('user_alive',user_name):
         return "Not Valid Username! Please Initialize.\n"
-    elif redis_store.hget('user_alive',user_name) == 0:
+    elif int(redis_store.hget('user_alive',user_name)) == 0:
         return "User is Dead! Please Start a New Game. \n"
     elif int(redis_store.hget('wallet',user_name)) < shield_price:
         return "Not enough money in wallet! Get more to purchase a shield.\n"
@@ -149,7 +149,7 @@ def dig_for_gold():
     user_name = request.args.get('username',type=str)
     if not redis_store.hexists('user_alive',user_name):
         return "Not Valid Username! Please Initialize.\n"
-    elif redis_store.hget('user_alive',user_name) == 0:
+    elif int(redis_store.hget('user_alive',user_name)) == 0:
         return "User is Dead! Please Start a New Game. \n"
     elif int(redis_store.hget('wallet',user_name)) < shovel_price:
         return "Not enough money in wallet! Get more to dig for gold.\n"
@@ -178,28 +178,22 @@ def attack():
         return "Not Valid Username! Please Initialize.\n"
     if not redis_store.hexists('user_alive',enemy):
         return "Not Valid Enemy Username! Please Attack a Valid Enemy.\n"
-    elif redis_store.hget('user_alive',user_name) == 0:
+    elif int(redis_store.hget('user_alive',user_name)) == 0:
         return "User is Dead! Please Start a New Game. \n"
-    elif redis_store.hget('user_alive',enemy) == 0:
+    elif int(redis_store.hget('user_alive',enemy)) == 0:
         return "Enemy is Dead! Don't kick a man when they're down. \n"
     else:
         weapon = redis_store.hget('weapon',user_name)
-        enemy_shield = bool(redis_store.hget('shield',enemy))
-        print(enemy_shield)
-        print(redis_store.hget('shield',enemy))
+        enemy_shield = bool(int(redis_store.hget('shield',enemy)))
         enemy_health_before = int(redis_store.hget('health',enemy))
         attack_successful = bool(random.binomial(1, weapon_success_rate[weapon]))
         if attack_successful:
             enemy_health_after = None
-            print(weapon_damage)
-            print(weapon)
             if enemy_shield:
                 damage = max(0, weapon_damage[weapon] - shield_protection)
-                print(damage)
                 enemy_health_after = max(0, enemy_health_before - damage)   
             else:
                 damage = weapon_damage[weapon]
-                print(damage)
                 enemy_health_after = max(0, enemy_health_before - damage)
             
             enemy_killed = (enemy_health_after == 0)
@@ -217,12 +211,12 @@ def attack():
             log_to_kafka('events',successful_attack_event)
             
             if enemy_killed:
-                wallet = redis_store.hget('wallet', user_name)
-                money_won = redis_store.hget('wallet', enemy)
+                wallet = int(redis_store.hget('wallet', user_name))
+                money_won = int(redis_store.hget('wallet', enemy))
                 redis_store.hset('user_alive', enemy, 0)
                 redis_store.hset('wallet', enemy, 0)
                 redis_store.hset('wallet', user_name, wallet+money_won)
-                return "Killed Enemy with %s!\n You won $%s!\n" % (weapon, money_won)
+                return "Killed Enemy with %s!\n You won $%i!\n" % (weapon, money_won)
             else:
                 return "Attacked Enemy with %s! Enemy has %i Health Left.\n" % (weapon, enemy_health_after)
         else:
