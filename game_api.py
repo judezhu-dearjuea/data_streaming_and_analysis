@@ -188,6 +188,7 @@ def attack():
         enemy_health_before = int(redis_store.hget('health',enemy))
         attack_successful = bool(random.binomial(1, weapon_success_rate[weapon]))
         if attack_successful:
+            enemy_health_after = None
             if enemy_shield:
                 damage = max(0, weapon_damage[weapon] - shield_protection)
                 enemy_health_after = max(0, enemy_health_before - damage)   
@@ -210,8 +211,8 @@ def attack():
             log_to_kafka('events',successful_attack_event)
             
             if enemy_killed:
-                wallet = redis_store.hget('wallet', user_name, wallet)
-                money_won = redis_store.hget('wallet', enemy, wallet)
+                wallet = redis_store.hget('wallet', user_name)
+                money_won = redis_store.hget('wallet', enemy)
                 redis_store.hset('user_alive', enemy, 0)
                 redis_store.hset('wallet', enemy, 0)
                 redis_store.hset('wallet', user_name, wallet+money_won)
