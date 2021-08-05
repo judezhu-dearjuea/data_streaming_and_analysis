@@ -204,6 +204,7 @@ def attack():
                 'attacker': user_name,
                 'defender': enemy,
                 'weapon_used': weapon,
+                'defender_has_shield' : enemy_shield,
                 'defender_health_before': enemy_health_before,
                 'defender_health_after': enemy_health_after,
                 'defender_killed': enemy_killed
