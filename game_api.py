@@ -185,15 +185,21 @@ def attack():
     else:
         weapon = redis_store.hget('weapon',user_name)
         enemy_shield = bool(redis_store.hget('shield',enemy))
+        print(enemy_shield)
+        print(redis_store.hget('shield',enemy))
         enemy_health_before = int(redis_store.hget('health',enemy))
         attack_successful = bool(random.binomial(1, weapon_success_rate[weapon]))
         if attack_successful:
             enemy_health_after = None
+            print(weapon_damage)
+            print(weapon)
             if enemy_shield:
                 damage = max(0, weapon_damage[weapon] - shield_protection)
+                print(damage)
                 enemy_health_after = max(0, enemy_health_before - damage)   
             else:
                 damage = weapon_damage[weapon]
+                print(damage)
                 enemy_health_after = max(0, enemy_health_before - damage)
             
             enemy_killed = (enemy_health_after == 0)
@@ -216,7 +222,7 @@ def attack():
                 redis_store.hset('user_alive', enemy, 0)
                 redis_store.hset('wallet', enemy, 0)
                 redis_store.hset('wallet', user_name, wallet+money_won)
-                return "Killed Enemy with %s!\n You won $%i!\n" % (weapon, money_won)
+                return "Killed Enemy with %s!\n You won $%s!\n" % (weapon, money_won)
             else:
                 return "Attacked Enemy with %s! Enemy has %i Health Left.\n" % (weapon, enemy_health_after)
         else:
@@ -227,4 +233,4 @@ def attack():
                 'weapon_used': weapon
             }
             log_to_kafka('events', failed_attack_event)
-            return "Attacked with %s Failed!" % (weapon)
+            return "Attacked with %s Failed! \n" % (weapon)
