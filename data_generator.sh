@@ -2,7 +2,7 @@
 #set limits
 MAXUSER=50
 #MINUSER=0
-MAXREQ=500
+MAXREQ=1000
 #initialize incrementer
 #NOOFUSER=0
 REQS=0
